@@ -5,19 +5,25 @@ import com.myproject.carrental.domain.CarDto;
 import com.myproject.carrental.exception.CarNotFoundException;
 import com.myproject.carrental.mapper.CarMapper;
 import com.myproject.carrental.repository.CarRepository;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class CarService {
 
-    private final CarRepository carRepository;
+    @Autowired
+    private CarRepository carRepository;
 
-    private final CarMapper carMapper;
+    @Autowired
+    private CarMapper carMapper;
+
 
     public void addCar(CarDto carDto) {
         carRepository.save(carMapper.mapToCar(carDto));
@@ -32,15 +38,18 @@ public class CarService {
     }
 
     public List<CarDto> getCarsByBrand(final String brand) {
-        return carMapper.mapToCarDtoList(carRepository.findByBrand(brand));
+        return carMapper.mapToCarDtoList(carRepository.findAll().stream().filter(car -> car.getBrand().toLowerCase().contains(brand.toLowerCase()))
+                .toList());
     }
 
     public List<CarDto> getCarsByLocation(final String location) {
-        return carMapper.mapToCarDtoList(carRepository.findByLocation(location));
+        return carMapper.mapToCarDtoList(carRepository.findAll().stream().filter(car -> car.getLocation().toLowerCase().contains(location.toLowerCase()))
+                .toList());
     }
 
     public List<CarDto> getCarsByType(final String type) {
-        return carMapper.mapToCarDtoList(carRepository.findByType(type));
+        return carMapper.mapToCarDtoList(carRepository.findAll().stream().filter(car -> car.getType().toLowerCase().contains(type.toLowerCase()))
+                .toList());
     }
 
     public List<CarDto> getCarsPriceRangeUpTo(final BigDecimal maxValue) {

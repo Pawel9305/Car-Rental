@@ -1,13 +1,17 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.7.9'
+    id 'org.springframework.boot' version '2.7.12'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
-    id 'com.vaadin' version '24.0.5'
+    id 'com.vaadin' version '23.3.11'
 }
 
 group = 'com.myproject'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
+
+ext {
+    set('vaadinVersion', "23.3.11")
+}
 
 configurations {
     compileOnly {
@@ -19,9 +23,6 @@ repositories {
     mavenCentral()
 }
 
-ext {
-    set('vaadinVersion', "24.0.5")
-}
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -38,8 +39,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.36'
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.15.1'
-}
+    implementation 'com.vaadin:vaadin-spring-boot-starter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+}
 
 dependencyManagement {
     imports {

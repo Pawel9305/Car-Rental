@@ -1,14 +1,13 @@
 package com.myproject.carrental.domain;
 
 
-import lombok.*;
+import lombok.Getter;
 
 @Getter
 public class Mail {
     private final String mailTo;
     private String subject;
     private String message;
-
     private long carId;
 
     private long rentalId;

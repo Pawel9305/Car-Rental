@@ -212,7 +212,6 @@ class CarServiceTestSuite {
         assertEquals(0, resultList.size());
     }
 
-    //TODO: check why it generates Exception
     @Test
     void testCarDbServiceGetCarsById() throws CarNotFoundException {
         //Given
@@ -242,7 +241,6 @@ class CarServiceTestSuite {
         assertThrows(CarNotFoundException.class, () -> carService.getById(2));
     }
 
-    //TODO: try to check if availability status matches
     @Test
     void testCarDbServiceChangeCarsAvailability() throws CarNotFoundException {
         //Given
@@ -256,7 +254,8 @@ class CarServiceTestSuite {
         carService.changeCarsAvailability(carId, false);
 
         //Then
-        verify(carRepository, times(1)).findById(carId);
+        assertFalse(carRepository.findById(carId).get().isAvailable());
+        verify(carRepository, times(2)).findById(carId);
         verify(carRepository, times(1)).save(car);
     }
 }

@@ -6,6 +6,7 @@ import com.myproject.carrental.exception.RentalNotFoundException;
 import com.myproject.carrental.exception.RentalOverlappingException;
 import com.myproject.carrental.exception.UserNotFoundException;
 import com.myproject.carrental.mapper.CarMapper;
+import com.myproject.carrental.mapper.RentalMapper;
 import com.myproject.carrental.mapper.UserMapper;
 import com.myproject.carrental.repository.RentalRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class RentalService {
     private final CarService carService;
     private final RentalCalculator calculator;
     private final UserMapper userMapper;
-
+    private final RentalMapper rentalMapper;
     private final CarMapper carMapper;
 
     public void rent(RentalRequest request) throws UserNotFoundException, CarNotFoundException, RentalOverlappingException {
@@ -68,5 +69,9 @@ public class RentalService {
 
     public List<RentalDto> getRentalsForUser(long userId) throws UserNotFoundException {
         return userService.getById(userId).getRentals();
+    }
+
+    public List<RentalDto> getAllRentals() {
+        return rentalMapper.mapToRentalDtoList(rentalRepository.findAll());
     }
 }
