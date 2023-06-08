@@ -8,11 +8,13 @@ import com.myproject.carrental.exception.UserNotFoundException;
 import com.myproject.carrental.mapper.CarMapper;
 import com.myproject.carrental.mapper.RentalMapper;
 import com.myproject.carrental.mapper.UserMapper;
+import com.myproject.carrental.repository.CarRepository;
 import com.myproject.carrental.repository.RentalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -21,6 +23,7 @@ public class RentalService {
     private final RentalRepository rentalRepository;
     private final UserService userService;
     private final CarService carService;
+    private final CarRepository carRepository;
     private final RentalCalculator calculator;
     private final UserMapper userMapper;
     private final RentalMapper rentalMapper;
@@ -40,6 +43,21 @@ public class RentalService {
         } else {
             throw new RentalOverlappingException();
         }
+    }
+
+    public List<CarDto> carsAvailableInAGivenPeriod(LocalDate from, LocalDate to, String location) {
+        List<CarDto> resultList = carMapper.mapToCarDtoList(carRepository.findAll().stream()
+                .filter(car -> car.getRentals().stream()
+                        .noneMatch(rental -> rental.getFrom().isBefore(to) && rental.getTo().isAfter(from)))
+                .toList());
+
+
+        if(location != null) {
+            return resultList.stream()
+                    .filter(carDto -> carDto.getLocation().equalsIgnoreCase(location))
+                    .toList();
+        }
+        return resultList;
     }
 
     public boolean returnACar(long rentalId) throws CarNotFoundException, RentalNotFoundException {

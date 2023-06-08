@@ -28,4 +28,5 @@ public interface CarRepository extends CrudRepository<Car, Long> {
     List<Car> findByType(final String type);
 
     List<Car> findByLocation(final String location);
+
 }

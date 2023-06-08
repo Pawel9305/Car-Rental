@@ -18,7 +18,6 @@ public class RentalCalculator {
 
     private final CarRepository carRepository;
     private final RentalRepository rentalRepository;
-
     private final EquipmentRepository equipmentRepository;
 
     public BigDecimal calculate(long carId, LocalDate from, LocalDate to) {

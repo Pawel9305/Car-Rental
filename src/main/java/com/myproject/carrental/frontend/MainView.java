@@ -1,8 +1,7 @@
 package com.myproject.carrental.frontend;
 
 import com.myproject.carrental.domain.CarDto;
-import com.myproject.carrental.service.CarService;
-import com.myproject.carrental.service.UserService;
+import com.myproject.carrental.service.*;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
@@ -21,16 +20,26 @@ public class MainView extends VerticalLayout {
     private CarService carService;
 
     private UserService userService;
+    private RentalService rentalService;
+    private RentalCalculator calculator;
+    private EquipmentService equipmentService;
 
     private Grid<CarDto> grid = new Grid<>(CarDto.class);
     private UserRegisterForm registerUser;
     private CarSearchForm carSearchForm;
+    private RentalRequestForm requestForm;
 
-    public MainView(CarService carService, UserService userService) {
+    public MainView(CarService carService, UserService userService, RentalService rentalService,
+                    RentalCalculator calculator, EquipmentService equipmentService, ExchangeRatesService exchangeRatesService) {
         this.carService = carService;
         this.userService = userService;
+        this.rentalService = rentalService;
+        this.calculator = calculator;
+        this.equipmentService = equipmentService;
+
         carSearchForm = new CarSearchForm(this, carService);
         registerUser = new UserRegisterForm(this, userService);
+        requestForm = new RentalRequestForm(this, rentalService, carService, calculator, equipmentService);
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
         H1 header = new H1("CAR-RENTAL");
@@ -47,28 +56,35 @@ public class MainView extends VerticalLayout {
             hideGrid();
             showRegisterUser();
             hideCarSearchForm();
+            requestForm.setVisible(false);
         });
         showCars.getElement().addEventListener(eventType, e -> {
             hideRegister();
             showGrid();
             showCarSearchForm();
+            requestForm.setVisible(false);
         });
         rentACar.getElement().addEventListener(eventType, e -> {
             hideRegister();
             hideGrid();
             hideCarSearchForm();
+            requestForm.setVisible(true);
         });
         returnACar.getElement().addEventListener(eventType, e -> {
             hideGrid();
             hideCarSearchForm();
             hideRegister();
+            requestForm.setVisible(false);
         });
         Tabs tabs = new Tabs(register, showCars, rentACar, returnACar);
+        requestForm.setMaxWidth("600px");
         registerUser.setMaxWidth("600px");
-        Div registerUserContainer = new Div(registerUser);
-        registerUserContainer.setClassName("center-container");
-        add(tabs, carSearchForm, grid, registerUserContainer);
 
+        Div registerUserContainer = new Div(registerUser);
+        Div requestFormContainer = new Div(requestForm);
+        add(tabs, carSearchForm, grid, registerUserContainer, requestFormContainer);
+
+        requestForm.setVisible(false);
         hideGrid();
         hideRegister();
     }

@@ -1,16 +1,18 @@
 package com.myproject.carrental.service;
 
 import com.myproject.carrental.client.ExchangeRatesClient;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class ExchangeRatesService {
 
-    private final ExchangeRatesClient exchangeRatesClient;
+    private ExchangeRatesClient exchangeRatesClient;
 
     public BigDecimal getAmountToPay(final String from, final String to, final BigDecimal amount) {
         return exchangeRatesClient.calculateAmountToPay(from, to, amount);

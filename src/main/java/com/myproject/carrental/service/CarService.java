@@ -38,18 +38,15 @@ public class CarService {
     }
 
     public List<CarDto> getCarsByBrand(final String brand) {
-        return carMapper.mapToCarDtoList(carRepository.findAll().stream().filter(car -> car.getBrand().toLowerCase().contains(brand.toLowerCase()))
-                .toList());
+        return carMapper.mapToCarDtoList(carRepository.findByBrand(brand));
     }
 
     public List<CarDto> getCarsByLocation(final String location) {
-        return carMapper.mapToCarDtoList(carRepository.findAll().stream().filter(car -> car.getLocation().toLowerCase().contains(location.toLowerCase()))
-                .toList());
+        return carMapper.mapToCarDtoList(carRepository.findByLocation(location));
     }
 
     public List<CarDto> getCarsByType(final String type) {
-        return carMapper.mapToCarDtoList(carRepository.findAll().stream().filter(car -> car.getType().toLowerCase().contains(type.toLowerCase()))
-                .toList());
+        return carMapper.mapToCarDtoList(carRepository.findByType(type));
     }
 
     public List<CarDto> getCarsPriceRangeUpTo(final BigDecimal maxValue) {
