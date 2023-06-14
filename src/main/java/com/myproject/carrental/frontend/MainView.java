@@ -1,5 +1,6 @@
 package com.myproject.carrental.frontend;
 
+import com.myproject.carrental.client.ExchangeRatesClient;
 import com.myproject.carrental.domain.CarDto;
 import com.myproject.carrental.service.*;
 import com.vaadin.flow.component.grid.Grid;
@@ -23,23 +24,30 @@ public class MainView extends VerticalLayout {
     private RentalService rentalService;
     private RentalCalculator calculator;
     private EquipmentService equipmentService;
+    private ExchangeRatesService exchangeRatesService;
+    private ExchangeRatesClient exchangeRatesClient;
 
     private Grid<CarDto> grid = new Grid<>(CarDto.class);
     private UserRegisterForm registerUser;
     private CarSearchForm carSearchForm;
     private RentalRequestForm requestForm;
 
+
     public MainView(CarService carService, UserService userService, RentalService rentalService,
-                    RentalCalculator calculator, EquipmentService equipmentService, ExchangeRatesService exchangeRatesService) {
+                    RentalCalculator calculator, EquipmentService equipmentService,
+                    ExchangeRatesService exchangeRatesService, ExchangeRatesClient exchangeRatesClient) {
         this.carService = carService;
         this.userService = userService;
         this.rentalService = rentalService;
         this.calculator = calculator;
         this.equipmentService = equipmentService;
+        this.exchangeRatesService = exchangeRatesService;
+        this.exchangeRatesClient = exchangeRatesClient;
 
         carSearchForm = new CarSearchForm(this, carService);
         registerUser = new UserRegisterForm(this, userService);
-        requestForm = new RentalRequestForm(this, rentalService, carService, calculator, equipmentService);
+        requestForm = new RentalRequestForm(this, rentalService, carService, calculator, equipmentService,
+                exchangeRatesService, exchangeRatesClient);
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
         H1 header = new H1("CAR-RENTAL");

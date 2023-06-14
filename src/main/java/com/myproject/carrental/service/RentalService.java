@@ -88,8 +88,4 @@ public class RentalService {
     public List<RentalDto> getRentalsForUser(long userId) throws UserNotFoundException {
         return userService.getById(userId).getRentals();
     }
-
-    public List<RentalDto> getAllRentals() {
-        return rentalMapper.mapToRentalDtoList(rentalRepository.findAll());
-    }
 }

@@ -1,12 +1,14 @@
 package com.myproject.carrental.frontend;
 
 import com.myproject.carrental.client.ExchangeRatesClient;
-import com.myproject.carrental.domain.AdditionalEquipmentDto;
 import com.myproject.carrental.domain.CarDto;
+import com.myproject.carrental.domain.RentalRequest;
+import com.myproject.carrental.exception.CarNotFoundException;
+import com.myproject.carrental.exception.RentalOverlappingException;
+import com.myproject.carrental.exception.UserNotFoundException;
 import com.myproject.carrental.service.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -28,29 +30,46 @@ public class RentalRequestForm extends FormLayout {
     private RentalCalculator calculator;
     private CarService carService;
     private EquipmentService equipmentService;
-
+    private ExchangeRatesService exchangeRatesService;
+    private ExchangeRatesClient exchangeRatesClient;
     private MainView mainView;
+    private RentalForm currentRentalForm;
     private ComboBox<City> location = new ComboBox<>("Location");
     private DatePicker from = new DatePicker("From");
     private DatePicker to = new DatePicker("To");
     private Button checkAvailability = new Button("Check");
     private Button send = new Button("Send");
-    private CheckboxGroup<AdditionalEquipmentDto> additionalEquipmentCheckBox = new CheckboxGroup<>("Additional equipment");
-
-    private Grid<CarDto> grid = new Grid<>(CarDto.class);
+    private Button rent = new Button("Rent");
+    private Grid<CarDto> carDtoGrid = new Grid<>(CarDto.class);
 
     public RentalRequestForm(MainView mainView, RentalService rentalService, CarService carService,
-                             RentalCalculator calculator, EquipmentService equipmentService) {
+                             RentalCalculator calculator, EquipmentService equipmentService,
+                             ExchangeRatesService exchangeRatesService, ExchangeRatesClient exchangeRatesClient) {
         this.rentalService = rentalService;
         this.mainView = mainView;
         this.carService = carService;
         this.calculator = calculator;
         this.equipmentService = equipmentService;
+        this.exchangeRatesService = exchangeRatesService;
+        this.exchangeRatesClient = exchangeRatesClient;
 
+        rent.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        rent.setVisible(false);
 
-        grid.setColumns("id", "brand", "model", "type", "price", "tankCapacity", "location");
-        grid.setMaxHeight("300px");
-        grid.setMaxWidth("1000px");
+        rent.addClickListener(e -> {
+            try {
+                rentACar();
+            } catch (UserNotFoundException ex) {
+
+            } catch (RentalOverlappingException ex) {
+
+            } catch (CarNotFoundException ex) {
+
+            }
+        });
+        carDtoGrid.setColumns("id", "brand", "model", "type", "price", "tankCapacity", "location");
+        carDtoGrid.setMaxHeight("300px");
+        carDtoGrid.setMaxWidth("1000px");
         location.setItems(City.values());
         checkAvailability.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         checkAvailability.setMaxWidth("100px");
@@ -66,15 +85,17 @@ public class RentalRequestForm extends FormLayout {
         formLayout.setPadding(false);
         formLayout.setSpacing(true);
 
-        grid.asSingleSelect().addValueChangeListener(event -> {
+        carDtoGrid.asSingleSelect().addValueChangeListener(event -> {
             CarDto selectedCar = event.getValue();
             if (selectedCar != null) {
                 showRentalCostForm(selectedCar, calculateCost());
+                add(rent);
+                rent.setVisible(true);
             }
         });
 
-        grid.setVisible(false);
-        add(formLayout, grid);
+        carDtoGrid.setVisible(false);
+        add(formLayout, carDtoGrid);
     }
 
     public void findCars() {
@@ -85,22 +106,22 @@ public class RentalRequestForm extends FormLayout {
             if (rentFrom.isAfter(LocalDate.now()) && rentTo.isAfter(rentFrom)) {
                 List<CarDto> carsFound = rentalService.carsAvailableInAGivenPeriod(rentFrom, rentTo, chosenLocation);
                 if (!carsFound.isEmpty()) {
-                    grid.setItems(carsFound);
-                    grid.setVisible(true);
+                    carDtoGrid.setItems(carsFound);
+                    carDtoGrid.setVisible(true);
                     mainView.updateFilteredCars(carsFound);
                     calculateCost();
                 } else {
-                    grid.setVisible(false);
+                    carDtoGrid.setVisible(false);
                     mainView.updateFilteredCars(Collections.emptyList());
                     Notification.show("There is no available car for the provided period!", 3000, Notification.Position.TOP_CENTER);
                 }
             } else {
-                grid.setVisible(false);
+                carDtoGrid.setVisible(false);
                 mainView.updateFilteredCars(Collections.emptyList());
                 Notification.show("Invalid date range! Please select a valid range.", 3000, Notification.Position.TOP_CENTER);
             }
         } else {
-            grid.setVisible(false);
+            carDtoGrid.setVisible(false);
             mainView.updateFilteredCars(Collections.emptyList());
             Notification.show("Please choose a date range.", 3000, Notification.Position.TOP_CENTER);
         }
@@ -109,7 +130,7 @@ public class RentalRequestForm extends FormLayout {
     public BigDecimal calculateCost() {
         LocalDate rentFrom = from.getValue();
         LocalDate rentTo = to.getValue();
-        GridSingleSelectionModel<CarDto> selectionModel = (GridSingleSelectionModel<CarDto>) grid.getSelectionModel();
+        GridSingleSelectionModel<CarDto> selectionModel = (GridSingleSelectionModel<CarDto>) carDtoGrid.getSelectionModel();
         Optional<CarDto> selectedCar = selectionModel.getSelectedItem();
         if (selectedCar.isPresent()) {
             return calculator.calculate(selectedCar.get().getId(), rentFrom, rentTo);
@@ -118,8 +139,22 @@ public class RentalRequestForm extends FormLayout {
     }
 
     public void showRentalCostForm(CarDto selectedCar, BigDecimal cost) {
-        RentalCostForm rentalCostForm = new RentalCostForm(selectedCar, cost, equipmentService);
-        add(rentalCostForm);
+        if (currentRentalForm != null) {
+            remove(currentRentalForm);
+        }
+        currentRentalForm = new RentalForm(selectedCar, cost, equipmentService, exchangeRatesService, exchangeRatesClient);
+        add(currentRentalForm);
+    }
+
+    public void rentACar() throws UserNotFoundException, RentalOverlappingException, CarNotFoundException {
+        LocalDate rentFrom = from.getValue();
+        LocalDate rentTo = to.getValue();
+        GridSingleSelectionModel<CarDto> selectionModel = (GridSingleSelectionModel<CarDto>) carDtoGrid.getSelectionModel();
+        Optional<CarDto> selectedCar = selectionModel.getSelectedItem();
+        if (selectedCar.isPresent()) {
+            rentalService.rent(new RentalRequest(49L, selectedCar.get().getId(), rentFrom, rentTo,
+                    location.getValue().toString(), currentRentalForm.getSelectedEquipmentIds()));
+        }
     }
 }
 

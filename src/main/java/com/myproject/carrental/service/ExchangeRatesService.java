@@ -3,6 +3,7 @@ package com.myproject.carrental.service;
 import com.myproject.carrental.client.ExchangeRatesClient;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class ExchangeRatesService {
 
+    @Autowired
     private ExchangeRatesClient exchangeRatesClient;
 
     public BigDecimal getAmountToPay(final String from, final String to, final BigDecimal amount) {
