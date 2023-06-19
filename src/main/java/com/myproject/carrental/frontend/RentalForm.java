@@ -6,7 +6,6 @@ import com.myproject.carrental.domain.CarDto;
 import com.myproject.carrental.service.EquipmentService;
 import com.myproject.carrental.service.ExchangeRatesService;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -14,6 +13,7 @@ import com.vaadin.flow.component.html.Label;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
 
@@ -25,12 +25,12 @@ public class RentalForm extends FormLayout {
     private ExchangeRatesService exchangeRatesService;
     private List<Long> selectedEquipmentIds;
     private final CheckboxGroup<AdditionalEquipmentDto> additionalEqChoice = new CheckboxGroup<>("Optional equipment");
-    private ComboBox<String> currency = new ComboBox<>("Payment currency");
-    private Button calculateAmountOfCurrency = new Button("Calculate");
-    private Label cost = new Label();
-    private Label convertedCost = new Label();
+    private final ComboBox<String> currency = new ComboBox<>("Payment currency");
+    private final Button calculateAmountOfCurrency = new Button("Calculate");
+    private final Label cost = new Label();
+    private final Label convertedCost = new Label();
     private BigDecimal convertedAmount;
-    private BigDecimal totalCost;
+    private final BigDecimal totalCost;
     private CarDto carDto;
 
 
@@ -50,7 +50,7 @@ public class RentalForm extends FormLayout {
         additionalEqChoice.addValueChangeListener(e -> cost.setText("Total cost: " + totalCost.add(getAdditionalCost())));
         calculateAmountOfCurrency.addClickListener(e -> {
             String chosenCurrency = currency.getValue();
-            convertedAmount = exchangeRatesService.getAmountToPay("PLN", chosenCurrency, totalCost.add(getAdditionalCost()));
+            convertedAmount = exchangeRatesService.getAmountToPay("PLN", chosenCurrency, totalCost.add(getAdditionalCost())).setScale(2, RoundingMode.HALF_UP);
             convertedCost.setText("Total cost in your currency is:   " + convertedAmount);
             convertedCost.setVisible(true);
         });

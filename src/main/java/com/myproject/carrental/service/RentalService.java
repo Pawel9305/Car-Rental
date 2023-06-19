@@ -51,8 +51,7 @@ public class RentalService {
                         .noneMatch(rental -> rental.getFrom().isBefore(to) && rental.getTo().isAfter(from)))
                 .toList());
 
-
-        if(location != null) {
+        if (location != null) {
             return resultList.stream()
                     .filter(carDto -> carDto.getLocation().equalsIgnoreCase(location))
                     .toList();

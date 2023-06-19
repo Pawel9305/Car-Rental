@@ -20,6 +20,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -55,16 +56,15 @@ public class RentalRequestForm extends FormLayout {
 
         rent.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         rent.setVisible(false);
-
         rent.addClickListener(e -> {
             try {
                 rentACar();
             } catch (UserNotFoundException ex) {
-
+                Notification.show("User not found!", 3000, Notification.Position.TOP_CENTER);
             } catch (RentalOverlappingException ex) {
-
+                Notification.show("There was a problem with availability of a chosen car", 3000, Notification.Position.TOP_CENTER);
             } catch (CarNotFoundException ex) {
-
+                Notification.show("Car not found!", 3000, Notification.Position.TOP_CENTER);
             }
         });
         carDtoGrid.setColumns("id", "brand", "model", "type", "price", "tankCapacity", "location");
@@ -126,16 +126,15 @@ public class RentalRequestForm extends FormLayout {
             Notification.show("Please choose a date range.", 3000, Notification.Position.TOP_CENTER);
         }
     }
-
+//TODO add weather forecast
     public BigDecimal calculateCost() {
         LocalDate rentFrom = from.getValue();
         LocalDate rentTo = to.getValue();
         GridSingleSelectionModel<CarDto> selectionModel = (GridSingleSelectionModel<CarDto>) carDtoGrid.getSelectionModel();
         Optional<CarDto> selectedCar = selectionModel.getSelectedItem();
-        if (selectedCar.isPresent()) {
-            return calculator.calculate(selectedCar.get().getId(), rentFrom, rentTo);
-        }
-        return BigDecimal.ZERO;
+        return selectedCar
+                .map(carDto -> calculator.calculate(carDto.getId(), rentFrom, rentTo).setScale(2, RoundingMode.HALF_UP))
+                .orElse(BigDecimal.ZERO);
     }
 
     public void showRentalCostForm(CarDto selectedCar, BigDecimal cost) {
