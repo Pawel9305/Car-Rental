@@ -3,11 +3,13 @@ package com.myproject.carrental.controller;
 import com.myproject.carrental.domain.CarDto;
 import com.myproject.carrental.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -53,5 +55,13 @@ public class CarController {
     @GetMapping(value = "price/{maxValue}")
     public ResponseEntity<List<CarDto>> carsByPriceRange(@PathVariable("maxValue") final BigDecimal maxValue) {
         return ResponseEntity.ok(carService.getCarsPriceRangeUpTo(maxValue));
+    }
+
+    @GetMapping(value = "/available")
+    public ResponseEntity<List<CarDto>> carsByDateAndLocation(
+            @RequestParam("rentFrom") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate rentFrom,
+            @RequestParam("rentTo") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate rentTo,
+            @RequestParam("chosenLocation") final String location) {
+        return ResponseEntity.ok(carService.carsAvailableInAGivenPeriod(rentFrom, rentTo, location));
     }
 }

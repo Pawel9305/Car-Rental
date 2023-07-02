@@ -19,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+
 public class RentalService {
     private final RentalRepository rentalRepository;
     private final UserService userService;
@@ -45,20 +46,6 @@ public class RentalService {
         }
     }
 
-    public List<CarDto> carsAvailableInAGivenPeriod(LocalDate from, LocalDate to, String location) {
-        List<CarDto> resultList = carMapper.mapToCarDtoList(carRepository.findAll().stream()
-                .filter(car -> car.getRentals().stream()
-                        .noneMatch(rental -> rental.getFrom().isBefore(to) && rental.getTo().isAfter(from)))
-                .toList());
-
-        if (location != null) {
-            return resultList.stream()
-                    .filter(carDto -> carDto.getLocation().equalsIgnoreCase(location))
-                    .toList();
-        }
-        return resultList;
-    }
-
     public boolean returnACar(long rentalId) throws CarNotFoundException, RentalNotFoundException {
         Rental rental = rentalRepository.findById(rentalId).orElseThrow(RentalNotFoundException::new);
         rental.setReturned(true);
@@ -68,8 +55,8 @@ public class RentalService {
         return rentalToCheck.isReturned();
     }
 
-    public BigDecimal calculateBasicCost(RentalRequest request) {
-        return calculator.calculate(request.getCarId(), request.getFrom(), request.getTo());
+    public BigDecimal calculateBasicCost(long carId, LocalDate from, LocalDate to) {
+        return calculator.calculate(carId, from, to);
     }
 
     public boolean isOverlap(RentalRequest request) {

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -64,5 +65,19 @@ public class CarService {
         Car car = carRepository.findById(iD).orElseThrow(CarNotFoundException::new);
         car.setAvailable(availability);
         carRepository.save(car);
+    }
+
+    public List<CarDto> carsAvailableInAGivenPeriod(LocalDate from, LocalDate to, String location) {
+        List<CarDto> resultList = carMapper.mapToCarDtoList(carRepository.findAll().stream()
+                .filter(car -> car.getRentals().stream()
+                        .noneMatch(rental -> rental.getFrom().isBefore(to) && rental.getTo().isAfter(from)))
+                .toList());
+
+        if (location != null) {
+            return resultList.stream()
+                    .filter(carDto -> carDto.getLocation().equalsIgnoreCase(location))
+                    .toList();
+        }
+        return resultList;
     }
 }

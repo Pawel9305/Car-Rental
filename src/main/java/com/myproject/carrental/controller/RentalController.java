@@ -8,13 +8,14 @@ import com.myproject.carrental.exception.RentalNotFoundException;
 import com.myproject.carrental.exception.RentalOverlappingException;
 import com.myproject.carrental.exception.UserNotFoundException;
 import com.myproject.carrental.service.RentalService;
-import com.myproject.carrental.service.facade.RentalFacade;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -22,24 +23,20 @@ import java.util.List;
 @RequestMapping("v1/rental")
 @RequiredArgsConstructor
 public class RentalController {
-    private final RentalFacade rentalFacade;
-
     private final RentalService rentalService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> rentACar(@RequestBody RentalRequest request) throws UserNotFoundException, CarNotFoundException, RentalOverlappingException {
-        rentalFacade.rentACar(request);
+        rentalService.rent(request);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "totalcost", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BigDecimal> totalRentalCost(@RequestBody RentalRequest request) {
-        return ResponseEntity.ok(rentalFacade.calculateRental(request));
-    }
-
-    @GetMapping(value = "cost", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BigDecimal> calculateBasicCost(@RequestBody RentalRequest request) {
-        BigDecimal basicCost = rentalService.calculateBasicCost(request);
+    @GetMapping(value = "cost")
+    public ResponseEntity<BigDecimal> calculateBasicCost(
+            @RequestParam("carId") long carId,
+            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        BigDecimal basicCost = rentalService.calculateBasicCost(carId, from, to);
         return ResponseEntity.ok(basicCost);
     }
 

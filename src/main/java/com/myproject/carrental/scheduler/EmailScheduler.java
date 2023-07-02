@@ -15,7 +15,7 @@ import java.util.List;
 @Component
 public class EmailScheduler {
 
-    private final static String SUBJECT = "Your rental car is due tomorrow!";
+    private final String SUBJECT = "Your rental car is due tomorrow!";
     private final RentalRepository rentalRepository;
     private final SimpleEmailService simpleEmailService;
 
@@ -26,11 +26,13 @@ public class EmailScheduler {
                 .toList();
 
         for (Rental rental : emailsToSend) {
-            Mail mail = new Mail(rental.getUser().getEmail())
+            Mail mail = new Mail.MailBuilder()
+                    .setMailTo(rental.getUser().getEmail())
                     .setSubject(SUBJECT)
                     .setMessage(createRentalMessage(rental))
                     .setCarId(rental.getCar().getId())
-                    .setRentalId(rental.getId());
+                    .setRentalId(rental.getId())
+                    .build();
             simpleEmailService.send(mail);
         }
     }

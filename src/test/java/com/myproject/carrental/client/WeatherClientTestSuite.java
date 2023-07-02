@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class WeatherClientTest {
+class WeatherClientTestSuite {
 
     @InjectMocks
     private WeatherClient weatherClient;
@@ -29,7 +29,7 @@ class WeatherClientTest {
     private WeatherConfig weatherConfig;
 
     @Test
-    void testWeatherClient_Successful() {
+    void testWeatherClientSuccessful() {
         //Given
         String[] time = {"2023-05-27"};
         int[] weatherCode = {23};
@@ -59,7 +59,7 @@ class WeatherClientTest {
     }
 
     @Test
-    void testWeatherClient_Unsuccessful() {
+    void testWeatherClientUnsuccessful() {
         //Given
         String[] time = {"2023-05-27"};
         int[] weatherCode = {23};

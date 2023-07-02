@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.myproject.carrental.domain.*;
 import com.myproject.carrental.service.RentalService;
-import com.myproject.carrental.service.facade.RentalFacade;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +30,6 @@ class RentalControllerTestSuite {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
-    private RentalFacade rentalFacade;
-
     @MockBean
     private RentalService rentalService;
 
@@ -60,41 +55,17 @@ class RentalControllerTestSuite {
     }
 
     @Test
-    void shouldReturnTotalRentalCost() throws Exception {
-        //Given
-        RentalRequest request = new RentalRequest(USER_ID, CAR_ID, LocalDate.now(), LocalDate.of(2023, 6, 4), "Warsaw", List.of());
-        when(rentalFacade.calculateRental(any())).thenReturn(new BigDecimal("200"));
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
-                .create();
-        String jsonRequest = gson.toJson(request);
-
-        //When&Then
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get("/v1/rental/totalcost")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(jsonRequest))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string("200"));
-    }
-
-    @Test
     void shouldCalculateBasicCost() throws Exception {
         //Given
         RentalRequest request = new RentalRequest(USER_ID, CAR_ID, LocalDate.now(), LocalDate.of(2023, 6, 4), "Warsaw", List.of());
-        when(rentalService.calculateBasicCost(any())).thenReturn(new BigDecimal("200"));
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
-                .create();
-        String jsonRequest = gson.toJson(request);
+        when(rentalService.calculateBasicCost(request.getCarId(), request.getFrom(), request.getTo())).thenReturn(new BigDecimal("200"));
 
         //When&Then
         mockMvc.perform(MockMvcRequestBuilders
                         .get("/v1/rental/cost")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(jsonRequest))
+                        .param("carId", String.valueOf(CAR_ID))
+                        .param("from", LocalDate.now().toString())
+                        .param("to", LocalDate.of(2023, 6, 4).toString()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().string("200"));
     }

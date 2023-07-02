@@ -107,21 +107,6 @@ class RentalServiceTestSuite {
     }
 
     @Test
-    void testRentalServiceCalculateBasicCost() {
-        //Given
-        BigDecimal totalCost = new BigDecimal("200");
-        RentalRequest request = new RentalRequest(USER_ID, CAR_ID, LocalDate.now(), LocalDate.now().plusDays(2), "test_location", List.of());
-        when(rentalCalculator.calculate(request.getCarId(), request.getFrom(), request.getTo())).thenReturn(totalCost);
-
-        //When
-        BigDecimal result = rentalService.calculateBasicCost(request);
-
-        //Then
-        assertEquals(totalCost, result);
-        verify(rentalCalculator, times(1)).calculate(request.getCarId(), request.getFrom(), request.getTo());
-    }
-
-    @Test
     void testRentalServiceIsOverlapReturnsTrue() {
         //Given
         RentalRequest request = new RentalRequest(USER_ID, CAR_ID, LocalDate.now(), LocalDate.now().plusDays(2), "test_location", List.of());
